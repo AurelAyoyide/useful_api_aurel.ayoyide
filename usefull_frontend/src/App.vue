@@ -7,7 +7,8 @@ import Navbar from './views/Navbar.vue';
 <template>
 
 
-  <Navbar></Navbar>
+  <!-- <Navbar></Navbar> -->
+  <Navbar v-if="$route.path == '/'"></Navbar>
   <RouterView></RouterView>
 
 

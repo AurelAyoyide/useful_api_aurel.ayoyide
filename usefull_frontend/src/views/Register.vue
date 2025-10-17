@@ -1,3 +1,54 @@
+<script setup>
+import { ref } from "vue";
+import { useUserStore } from "../stores/authStore";
+import { useRouter, RouterLink } from "vue-router"
+
+
+const store = useUserStore();
+const router = useRouter()
+
+const name = ref("");
+const email = ref("");
+const password = ref("");
+const confirmPassword = ref("");
+const error = ref(null);
+
+
+async function handleRegister(e) {
+    e.preventDefault();
+    error.value = null;
+
+    if (password.value != confirmPassword.value) {
+        error.value = "Les mots de passe ne correspondent pas";
+        return;
+    }
+    try {
+        const result = await store.register({
+            name: name.value,
+            email: email.value,
+            password: password.value,
+            c_password: confirmPassword.value,
+        });
+
+        if (result && result.token) {
+            localStorage.setItem('token', result.token);
+        }
+
+        name.value = "";
+        email.value = "";
+        password.value = "";
+        confirmPassword.value = "";
+        error.value = null;
+
+        router.push("/dashboard")
+
+    } catch (err) {
+        error.value = err.message || "Error to register";
+    }
+}
+
+</script>
+
 <template>
     <div class="flex h-[700px] w-full">
         <div class="w-full hidden md:inline-block">
@@ -8,12 +59,11 @@
 
         <div class="w-full flex flex-col items-center justify-center">
 
-            <form class="md:w-96 w-80 flex flex-col items-center justify-center">
+            <form @submit.prevent="handleRegister" class="md:w-96 w-80 flex flex-col items-center justify-center">
                 <h2 class="text-4xl text-gray-900 font-medium">Register</h2>
                 <p class="text-sm text-gray-500/90 mt-3">Welcome on our website! Please create your account to continue
                 </p>
                 <br>
-
 
 
                 <div
@@ -23,9 +73,10 @@
                             d="M0 .55.571 0H15.43l.57.55v9.9l-.571.55H.57L0 10.45zm1.143 1.138V9.9h13.714V1.69l-6.503 4.8h-.697zM13.749 1.1H2.25L8 5.356z"
                             fill="#6B7280" />
                     </svg>
-                    <input type="email" placeholder="Email"
+                    <input type="email" placeholder="Email" v-model="email"
                         class="bg-transparent text-gray-500/80 placeholder-gray-500/80 outline-none text-sm w-full h-full"
                         required>
+
                 </div>
 
 
@@ -47,7 +98,7 @@
                             </g>
                         </g>
                     </svg>
-                    <input type="text" placeholder="Name"
+                    <input type="text" placeholder="Name" v-model="name"
                         class="bg-transparent text-gray-500/80 placeholder-gray-500/80 outline-none text-sm w-full h-full"
                         required>
                 </div>
@@ -58,7 +109,7 @@
                             d="M13 8.5c0-.938-.729-1.7-1.625-1.7h-.812V4.25C10.563 1.907 8.74 0 6.5 0S2.438 1.907 2.438 4.25V6.8h-.813C.729 6.8 0 7.562 0 8.5v6.8c0 .938.729 1.7 1.625 1.7h9.75c.896 0 1.625-.762 1.625-1.7zM4.063 4.25c0-1.406 1.093-2.55 2.437-2.55s2.438 1.144 2.438 2.55V6.8H4.061z"
                             fill="#6B7280" />
                     </svg>
-                    <input type="password" placeholder="Password"
+                    <input type="password" placeholder="Password" v-model="password"
                         class="bg-transparent text-gray-500/80 placeholder-gray-500/80 outline-none text-sm w-full h-full"
                         required>
                 </div>
@@ -69,7 +120,7 @@
                             d="M13 8.5c0-.938-.729-1.7-1.625-1.7h-.812V4.25C10.563 1.907 8.74 0 6.5 0S2.438 1.907 2.438 4.25V6.8h-.813C.729 6.8 0 7.562 0 8.5v6.8c0 .938.729 1.7 1.625 1.7h9.75c.896 0 1.625-.762 1.625-1.7zM4.063 4.25c0-1.406 1.093-2.55 2.437-2.55s2.438 1.144 2.438 2.55V6.8H4.061z"
                             fill="#6B7280" />
                     </svg>
-                    <input type="password" placeholder=" Confirm Password"
+                    <input type="password" placeholder=" Confirm Password" v-model="confirmPassword"
                         class="bg-transparent text-gray-500/80 placeholder-gray-500/80 outline-none text-sm w-full h-full"
                         required>
                 </div>
@@ -82,7 +133,7 @@
                     </div>
                     <a class="text-sm underline" href="#">Forgot password?</a>
                 </div>
-
+                <p v-if="error" class="text-red-500 text-center text-sm">{{ error }}</p>
                 <button type="submit"
                     class="mt-8 w-full h-11 rounded-full text-white bg-indigo-500 hover:opacity-90 transition-opacity cursor-pointer">
                     Register
